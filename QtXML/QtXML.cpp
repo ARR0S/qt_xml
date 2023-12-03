@@ -5,7 +5,6 @@ int QtXML::tabcount = 1;
 QtXML::QtXML(QWidget* parent)
 	: QMainWindow(parent)
 {
-
 	model = new QtTreeModel(this);
 	view = new QTreeView(this);
 	view->setModel(model);
@@ -14,13 +13,13 @@ QtXML::QtXML(QWidget* parent)
 	tabWgt->addTab(view, tr("Tab 1"));
 	tabWgt->setCurrentIndex(tabWgt->indexOf(view));
 	setCentralWidget(tabWgt);
-
 	setupMenu();
 
 	resize(800, 600);
 	setWindowTitle("XMLTreeViewer");
-
 	connect(view, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(customMenu(QPoint)));
+
+	setAcceptDrops(true);
 }
 
 void QtXML::setupMenu() {
@@ -39,6 +38,62 @@ void QtXML::setupMenu() {
 	connect(openAction, SIGNAL(triggered()), this, SLOT(open()));
 	connect(clearallAction, SIGNAL(triggered()), this, SLOT(clearAll()));
 	connect(exitAction, SIGNAL(triggered()), this, SLOT(exit()));
+}
+
+void QtXML::dropEvent(QDropEvent* event)
+{
+	if (event->mimeData()->hasUrls()) {
+		QList<QUrl> urlList = event->mimeData()->urls();
+
+		// Получаем текущий индекс таба
+		int currentIndex = tabWgt->currentIndex();
+		if (currentIndex >= 0 && currentIndex < tabWgt->count()) {
+			auto* currView = qobject_cast<QTreeView*>(tabWgt->widget(currentIndex));
+			if (currView) {
+				auto* currModel = dynamic_cast<QtTreeModel*>(currView->model());
+				if (currModel) {
+					for (const QUrl& url : urlList) {
+						QString filePath = url.toLocalFile();
+						currModel->read(filePath);
+					}
+					currView->reset();
+				}
+			}
+		}
+		for (int i = tabWgt->count() - 1; i >= 0; --i) {
+			auto* tabView = qobject_cast<QTreeView*>(tabWgt->widget(i));
+			if (tabView) {
+				auto* tabModel = dynamic_cast<QtTreeModel*>(tabView->model());
+				if (tabModel) {
+					for (const QUrl& url : urlList) {
+						QString filePath = url.toLocalFile();
+						tabModel->addFile(filePath);
+					}
+				}
+			}
+		}
+	}
+	QMainWindow::dropEvent(event);
+}
+
+void QtXML::dragMoveEvent(QDragMoveEvent* event) {
+	if (event->mimeData()->hasUrls()) {
+		QPoint tabPos = tabWgt->mapFrom(this, event->pos());
+		int tabIndex = tabWgt->tabBar()->tabAt(tabPos);
+		if (tabIndex >= 0 && tabIndex < tabWgt->count()) {
+			tabWgt->setCurrentIndex(tabIndex);
+		}
+		event->accept();
+	}
+	QMainWindow::dragMoveEvent(event);
+}
+
+
+void QtXML::dragEnterEvent(QDragEnterEvent* event)
+{
+	if (event->mimeData()->hasUrls()) {
+		event->acceptProposedAction();
+	}
 }
 
 void QtXML::open()
@@ -66,9 +121,6 @@ void QtXML::open()
 		}
 	}
 }
-
-
-
 
 void QtXML::closeFile() {
 	auto* currView = qobject_cast<QTreeView*>(tabWgt->currentWidget());
@@ -110,8 +162,6 @@ void QtXML::closeFile() {
 	}
 }
 
-
-
 void QtXML::clearAll() {
 	auto* firstView = qobject_cast<QTreeView*>(tabWgt->widget(0));
 	if (firstView) {
@@ -143,10 +193,6 @@ void QtXML::clearAll() {
 	model->clearFileList();
 	view->reset();
 }
-
-
-
-
 
 void QtXML::newTab()
 {

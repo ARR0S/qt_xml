@@ -184,8 +184,10 @@ QVariant QtTreeModel::data(const QModelIndex& index, int role) const
 
 QVariant QtTreeModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-	if ((orientation == Qt::Horizontal) && (role == Qt::DisplayRole))
-		return QString();
+	if ((orientation == Qt::Horizontal) && (role == Qt::DisplayRole) && section==0)
+		return QString("Parameter");
+	if ((orientation == Qt::Horizontal) && (role == Qt::DisplayRole) && section == 1)
+		return QString("Value");
 	return QVariant();
 }
 

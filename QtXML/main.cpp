@@ -4,7 +4,7 @@
 #include <QDebug>
 void customMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
-	Q_UNUSED(context); // Используется для избежания предупреждения о неиспользуемой переменной
+	Q_UNUSED(context);
 
 	switch (type) {
 	case QtDebugMsg:

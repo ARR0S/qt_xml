@@ -6,7 +6,13 @@
 #include <QVBoxLayout>
 #include <QFileDialog>
 #include <QTreeView>
+#include <QEvent>
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QMimeData>
 #include "QtTreeModel.h"
+
+
 
 class QtXML : public QMainWindow
 {
@@ -22,6 +28,9 @@ private:
 	QMenu* menu;
 	QTabWidget* tabWgt;
 	void setupMenu();
+	void dropEvent(QDropEvent* event) override;
+	void dragMoveEvent(QDragMoveEvent* event) override;
+	void dragEnterEvent(QDragEnterEvent* event) override;
 
 private slots:
 
@@ -32,3 +41,4 @@ private slots:
 	void exit();
 	void customMenu(const QPoint& pos);
 };
+

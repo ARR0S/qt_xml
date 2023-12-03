@@ -29,6 +29,7 @@ public:
 	void addFile(const QString& fileName);
 	void clearFileList();
 
+
 private:
 	QStringList files{};
 	QStandardItem* root{};
